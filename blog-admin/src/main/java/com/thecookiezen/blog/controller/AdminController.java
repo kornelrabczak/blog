@@ -3,14 +3,21 @@ package com.thecookiezen.blog.controller;
 import com.thecookiezen.blog.domain.User;
 import com.thecookiezen.blog.repository.PostRepository;
 import com.thecookiezen.blog.repository.UserRepository;
-import org.apache.log4j.Logger;
+import com.thecookiezen.blog.validate.UserExistsValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.validation.Valid;
+import java.util.List;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -28,8 +35,14 @@ public class AdminController {
     @Autowired
     private PasswordEncoder encoder;
 
-    private static final Logger logger = Logger.getLogger(AdminController.class);
+    @Autowired
+    @Qualifier("userValidator")
+    private UserExistsValidator userExistsValidator;
 
+    @InitBinder
+    private void initBinder(WebDataBinder binder) {
+        binder.setValidator(userExistsValidator);
+    }
 
     @RequestMapping("/")
     public String admin() {
@@ -43,21 +56,24 @@ public class AdminController {
 
     @RequestMapping("/users")
     public String users(Model model) {
-        model.addAttribute("users", userRepository.findAll());
+        List<User> all = userRepository.findAll();
+        model.addAttribute("users", all);
         return "users";
     }
 
     @RequestMapping(value = "/addUser", method = GET)
     public String addUserForm(Model model) {
-        model.addAttribute("newUser", new User());
+        model.addAttribute("user", new User());
         return "addUser";
     }
 
     @RequestMapping(value = "/addUser", method = POST)
-    public String addUserAction(@ModelAttribute User user) {
-        logger.info(user);
+    public String addUserAction(@ModelAttribute("user") @Valid User user, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "addUser";
+        }
+
         user.setPassword(encoder.encode(user.getPassword()));
-        logger.info(user);
         userRepository.save(user);
         return "redirect:users";
     }
