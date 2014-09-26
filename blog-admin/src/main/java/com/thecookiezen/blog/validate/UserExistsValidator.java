@@ -16,7 +16,7 @@ public class UserExistsValidator implements Validator {
 
     @Override
     public boolean supports(Class<?> aClass) {
-        return User.class.equals(aClass);
+        return User.class.isAssignableFrom(aClass);
     }
 
     @Override

@@ -1,11 +1,15 @@
 package com.thecookiezen.blog.controller;
 
 import com.thecookiezen.blog.domain.User;
+import com.thecookiezen.blog.model.PageWrapper;
 import com.thecookiezen.blog.repository.PostRepository;
 import com.thecookiezen.blog.repository.UserRepository;
 import com.thecookiezen.blog.validate.UserExistsValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,7 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
-import java.util.List;
+
+import java.util.logging.Logger;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -25,6 +30,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+
+    private final static Logger logger = Logger.getLogger("AdminController");
 
     @Autowired
     private PostRepository postRepository;
@@ -39,7 +46,7 @@ public class AdminController {
     @Qualifier("userValidator")
     private UserExistsValidator userExistsValidator;
 
-    @InitBinder
+    @InitBinder("user")
     private void initBinder(WebDataBinder binder) {
         binder.setValidator(userExistsValidator);
     }
@@ -55,9 +62,10 @@ public class AdminController {
     }
 
     @RequestMapping("/users")
-    public String users(Model model) {
-        List<User> all = userRepository.findAll();
-        model.addAttribute("users", all);
+    public String users(@PageableDefault(size = 5, page = 0) Pageable pageable, Model model) {
+        logger.info(pageable.toString());
+        Page<User> userPage = userRepository.findAll(pageable);
+        model.addAttribute("page", new PageWrapper<User>(userPage, "/admin/users"));
         return "users";
     }
 
