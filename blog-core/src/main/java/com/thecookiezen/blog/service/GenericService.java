@@ -1,5 +1,10 @@
 package com.thecookiezen.blog.service;
 
+import com.thecookiezen.blog.domain.User;
+import com.thecookiezen.blog.model.PageWrapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 /**
@@ -15,4 +20,5 @@ public interface GenericService<T, ID extends java.io.Serializable> {
 
     void delete(ID id);
 
+    PageWrapper<T> findAll(Pageable pageable);
 }

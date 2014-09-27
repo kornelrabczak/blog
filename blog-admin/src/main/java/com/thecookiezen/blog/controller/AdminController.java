@@ -4,7 +4,7 @@ import com.thecookiezen.blog.domain.User;
 import com.thecookiezen.blog.model.PageWrapper;
 import com.thecookiezen.blog.repository.PostRepository;
 import com.thecookiezen.blog.service.UserService;
-import org.apache.log4j.Logger;
+import com.thecookiezen.blog.validate.UserExistsValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 
-import java.util.logging.Logger;
-
 import java.util.List;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -32,8 +30,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-
-    private final static Logger logger = Logger.getLogger("AdminController");
 
     @Autowired
     private PostRepository postRepository;
@@ -65,24 +61,22 @@ public class AdminController {
 
     @RequestMapping("/users")
     public String users(@PageableDefault(size = 5, page = 0) Pageable pageable, Model model) {
-        logger.info(pageable.toString());
-        Page<User> userPage = userRepository.findAll(pageable);
-        model.addAttribute("page", new PageWrapper<User>(userPage, "/admin/users"));
+        getUsers(pageable);
         return "users";
     }
 
-    @ModelAttribute("users")
-    public List<User> getUsers() {
-        return userService.findAll();
+    @ModelAttribute("page")
+    public PageWrapper<User> getUsers(Pageable pageable) {
+        return userService.findAll(pageable);
     }
 
     @RequestMapping(value = "/addUser", method = GET)
     public String addUserForm(Model model) {
-        model.addAttribute("user", new User());
+        getUserForm();
         return "addUser";
     }
 
-    @ModelAttribute("newUser")
+    @ModelAttribute("user")
     public User getUserForm() {
         return new User();
     }
@@ -94,7 +88,7 @@ public class AdminController {
         }
 
         user.setPassword(encoder.encode(user.getPassword()));
-        userRepository.save(user);
+        userService.save(user);
         return "redirect:users";
     }
 
