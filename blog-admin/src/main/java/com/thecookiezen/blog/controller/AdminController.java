@@ -2,7 +2,7 @@ package com.thecookiezen.blog.controller;
 
 import com.thecookiezen.blog.domain.User;
 import com.thecookiezen.blog.repository.PostRepository;
-import com.thecookiezen.blog.repository.UserRepository;
+import com.thecookiezen.blog.service.UserService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,6 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -23,7 +25,7 @@ public class AdminController {
     private PostRepository postRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Autowired
     private PasswordEncoder encoder;
@@ -43,14 +45,24 @@ public class AdminController {
 
     @RequestMapping("/users")
     public String users(Model model) {
-        model.addAttribute("users", userRepository.findAll());
+        getUsers();
         return "users";
+    }
+
+    @ModelAttribute("users")
+    public List<User> getUsers() {
+        return userService.findAll();
     }
 
     @RequestMapping(value = "/addUser", method = GET)
     public String addUserForm(Model model) {
-        model.addAttribute("newUser", new User());
+        getUserForm();
         return "addUser";
+    }
+
+    @ModelAttribute("newUser")
+    public User getUserForm() {
+        return new User();
     }
 
     @RequestMapping(value = "/addUser", method = POST)
@@ -58,13 +70,13 @@ public class AdminController {
         logger.info(user);
         user.setPassword(encoder.encode(user.getPassword()));
         logger.info(user);
-        userRepository.save(user);
+        userService.save(user);
         return "redirect:users";
     }
 
     @RequestMapping(value = "/removeUser", method = GET)
     public String removeUserAction(@RequestParam("userId") String userId) {
-        userRepository.delete(userId);
+        userService.delete(userId);
         return "redirect:users";
     }
 }
