@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
 
 @EnableAutoConfiguration
-@ComponentScan
+@ComponentScan(basePackages = "com.thecookiezen.blog.*")
 @Configuration
 @ImportResource("META-INF/spring/applicationContext.xml")
 @Import({SecurityConfig.class, MvcConfig.class})

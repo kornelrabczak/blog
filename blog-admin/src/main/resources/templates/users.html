@@ -12,7 +12,8 @@
     <div id="page-wrapper">
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header" th:inline="text">Users</h1>
+                <h1 class="page-header" th:inline="text">Users <a th:href="@{/admin/addUser}" type="button"
+                                                                  class="btn btn-primary">Create user</a></h1>
             </div>
 
             <div class="table-responsive">
@@ -30,11 +31,12 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="user : ${users}">
+                        <tr th:each="user : ${page.getContent()}">
                             <td th:text="${user.username}"></td>
                             <td th:text="${user.role}"></td>
                             <td>
-                                <a th:href="@{/admin/removeUser(userId=${user.id})}" type="button" class="btn btn-warning btn-circle"><i class="fa fa-times"></i>
+                                <a th:href="@{/admin/removeUser(userId=${user.id})}" type="button"
+                                   class="btn btn-warning btn-circle"><i class="fa fa-times"></i>
                                 </a>
                             </td>
                         </tr>
@@ -42,29 +44,37 @@
                     </table>
                     <div class="row">
                         <div class="col-sm-6">
-                            <div class="dataTables_info" id="dataTables-example_info" role="alert" aria-live="polite"
-                                 aria-relevant="all">Showing 1 to 10 of 57 entries
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
                             <div class="dataTables_paginate paging_simple_numbers" id="dataTables-example_paginate">
                                 <ul class="pagination">
-                                    <li class="paginate_button previous disabled" aria-controls="dataTables-example"
-                                        tabindex="0" id="dataTables-example_previous"><a href="#">Previous</a></li>
-                                    <li class="paginate_button active" aria-controls="dataTables-example" tabindex="0">
-                                        <a href="#">1</a></li>
-                                    <li class="paginate_button " aria-controls="dataTables-example" tabindex="0"><a
-                                            href="#">2</a></li>
-                                    <li class="paginate_button " aria-controls="dataTables-example" tabindex="0"><a
-                                            href="#">3</a></li>
-                                    <li class="paginate_button " aria-controls="dataTables-example" tabindex="0"><a
-                                            href="#">4</a></li>
-                                    <li class="paginate_button " aria-controls="dataTables-example" tabindex="0"><a
-                                            href="#">5</a></li>
-                                    <li class="paginate_button " aria-controls="dataTables-example" tabindex="0"><a
-                                            href="#">6</a></li>
-                                    <li class="paginate_button next" aria-controls="dataTables-example" tabindex="0"
-                                        id="dataTables-example_next"><a href="#">Next</a></li>
+                                    <li th:class="${page.firstPage} ? ' disabled' : ''">
+                                        <span th:if='${page.firstPage}'>← First</span>
+                                        <a th:if='${not page.firstPage}'
+                                           th:href='@{${page.url}(page=1,size=${page.size})}'>← First</a>
+                                    </li>
+                                    <li th:class="${page.hasPreviousPage}? '' : 'disabled'">
+                                    <span th:if='${not page.hasPreviousPage}'>«</span>
+                                    <a th:if='${page.hasPreviousPage}'
+                                       th:href='@{${page.url}(page=${page.number-1},size=${page.size})}'
+                                       title='Go to previous page'>«</a>
+                                    </li>
+                                    <li th:each="item : ${page.items}" th:class="${item.current}? ' active' : ''">
+                                    <span th:if='${item.current}' th:text='${item.number}'>1</span>
+                                    <a th:if='${not item.current}'
+                                       th:href='@{${page.url}(page=${item.number},size=${page.size})}'><span
+                                            th:text='${item.number}'>1</span></a>
+                                    </li>
+                                    <li th:class="${page.hasNextPage}? '' : 'disabled'">
+                                    <span th:if='${not page.hasNextPage}'>»</span>
+                                    <a th:if='${page.hasNextPage}'
+                                       th:href='@{${page.url}(page=${page.number+1},size=${page.size})}'
+                                       title='Go to next page'>»</a>
+                                    </li>
+                                    <li th:class="${page.lastPage}? ' disabled' : ''">
+                                    <span th:if='${page.lastPage}'>Last →</span>
+                                    <a th:if='${not page.lastPage}'
+                                       th:href='@{${page.url}(page=${page.totalPages},size=${page.size})}'>Last
+                                        →</a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
